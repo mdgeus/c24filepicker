@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>C24 asset URL copy tool</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f5f7fb;
+      color: #1f2937;
+    }
+
+    .wrap {
+      max-width: 960px;
+      margin: 30px auto;
+      background: #fff;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 28px;
+    }
+
+    .screen[hidden] {
+      display: none;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    input {
+      padding: 10px 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    button {
+      margin-top: 18px;
+      padding: 12px 18px;
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #2563eb;
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .secondary-btn {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    button:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
+    .status {
+      margin-top: 18px;
+      padding: 12px;
+      border-radius: 8px;
+      background: #eef2ff;
+      white-space: pre-wrap;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background: white;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    th {
+      background: #f9fafb;
+    }
+
+    .muted {
+      color: #6b7280;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    .action-btn {
+      margin-top: 0;
+      padding: 8px 12px;
+      font-size: 13px;
+      background: #111827;
+    }
+
+    .url-preview {
+      margin-top: 16px;
+      padding: 12px;
+      border: 1px solid #dbe3f0;
+      border-radius: 8px;
+      background: #f9fbff;
+      word-break: break-all;
+      font-size: 14px;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .search-row {
+      margin-top: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div id="connectionScreen" class="screen">
+      <h1>SFTP File Browser</h1>
+      <p class="muted">Save the connection settings locally, enter the key passphrase each time, then open the file list in a separate screen.</p>
+
+      <div class="grid">
+        <div class="field">
+          <label for="host">Host</label>
+          <input id="host" placeholder="sftp.example.com" />
+        </div>
+
+        <div class="field">
+          <label for="port">Port</label>
+          <input id="port" placeholder="22" value="22" />
+        </div>
+
+        <div class="field">
+          <label for="username">Username</label>
+          <input id="username" placeholder="username" />
+        </div>
+
+        <div class="field">
+          <label for="passphrase">Key Passphrase</label>
+          <input id="passphrase" type="password" placeholder="enter each time" />
+        </div>
+
+        <div class="field full">
+          <label for="privateKeyPath">Private Key Path</label>
+          <input id="privateKeyPath" placeholder="C:\Users\Dennis\.ssh\id_rsa or /Users/dennis/.ssh/id_rsa" />
+        </div>
+
+        <div class="field full">
+          <label for="remotePath">Remote Folder</label>
+          <input id="remotePath" placeholder="/home/files/incoming" />
+        </div>
+      </div>
+
+      <button id="connectBtn">Connect and Open File List</button>
+      <div id="status" class="status">Ready.</div>
+    </div>
+
+    <div id="filesScreen" class="screen" hidden>
+      <div class="toolbar">
+        <div>
+          <h1>Files</h1>
+          <p id="connectionSummary" class="muted"></p>
+        </div>
+        <div class="toolbar-actions">
+          <button id="changeConnectionBtn" class="secondary-btn">Change Connection</button>
+          <button id="refreshBtn">Refresh Files</button>
+        </div>
+      </div>
+
+      <div id="filesStatus" class="status">Ready.</div>
+      <div id="urlPreview" class="url-preview" style="display:none;"></div>
+      <div class="field search-row">
+        <label for="searchInput">Search Files</label>
+        <input id="searchInput" placeholder="Type to filter by file name" />
+      </div>
+
+      <table id="resultsTable" style="display:none;">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Size</th>
+            <th>Modified</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const { ipcRenderer, clipboard } = require('electron');
+    const STORAGE_KEY = 'sftp-file-browser-settings';
+    const DEFAULT_SETTINGS = {
+      host: 'assets.conversation24.com',
+      port: '22',
+      username: 'conversation24.com',
+      privateKeyPath: '',
+      remotePath: '/srv/www/c/conversation24.com/vhosts/assets/htdocs/wa_images'
+    };
+
+    const connectionScreen = document.getElementById('connectionScreen');
+    const filesScreen = document.getElementById('filesScreen');
+    const connectBtn = document.getElementById('connectBtn');
+    const statusEl = document.getElementById('status');
+    const filesStatusEl = document.getElementById('filesStatus');
+    const urlPreviewEl = document.getElementById('urlPreview');
+    const resultsTable = document.getElementById('resultsTable');
+    const resultsBody = document.getElementById('resultsBody');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const changeConnectionBtn = document.getElementById('changeConnectionBtn');
+    const connectionSummaryEl = document.getElementById('connectionSummary');
+    const searchInput = document.getElementById('searchInput');
+
+    let currentConfig = null;
+    let currentFiles = [];
+
+    function formatDate(value) {
+      if (!value) return '';
+      const d = new Date(value);
+      if (Number.isNaN(d.getTime())) return String(value);
+      return d.toLocaleString();
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function normalizeRemotePath(remotePath) {
+      if (!remotePath) return '';
+      return remotePath.replace(/\\/g, '/').replace(/\/+/g, '/').replace(/\/$/, '');
+    }
+
+    function getPublicAssetPath(remotePath) {
+      const normalizedPath = normalizeRemotePath(remotePath);
+      const publicRoot = '/wa_images';
+      const publicRootIndex = normalizedPath.indexOf(publicRoot);
+
+      if (publicRootIndex === -1) {
+        return normalizedPath;
+      }
+
+      return normalizedPath.slice(publicRootIndex);
+    }
+
+    function createAssetUrl(remotePath, fileName) {
+      const baseUrl = 'https://assets.conversation24.com';
+      const publicPath = getPublicAssetPath(remotePath);
+      const cleanFileName = String(fileName || '').replace(/^\/+/, '');
+      return `${baseUrl}${publicPath}/${cleanFileName}`;
+    }
+
+    function copyUrl(remotePath, fileName) {
+      const url = createAssetUrl(remotePath, fileName);
+      clipboard.writeText(url);
+      urlPreviewEl.style.display = '';
+      urlPreviewEl.innerHTML = `<strong>Copied URL:</strong><br>${escapeHtml(url)}`;
+      filesStatusEl.textContent = `Copied URL for ${fileName} to clipboard.`;
+    }
+
+    function setScreen(screenName) {
+      const showConnection = screenName === 'connection';
+      connectionScreen.hidden = !showConnection;
+      filesScreen.hidden = showConnection;
+    }
+
+    function getConfigFromForm() {
+      return {
+        host: document.getElementById('host').value.trim(),
+        port: document.getElementById('port').value.trim(),
+        username: document.getElementById('username').value.trim(),
+        passphrase: document.getElementById('passphrase').value,
+        privateKeyPath: document.getElementById('privateKeyPath').value.trim(),
+        remotePath: document.getElementById('remotePath').value.trim()
+      };
+    }
+
+    function saveSettings(config) {
+      const settingsToStore = {
+        host: config.host,
+        port: config.port,
+        username: config.username,
+        privateKeyPath: config.privateKeyPath,
+        remotePath: config.remotePath
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(settingsToStore));
+    }
+
+    function loadSavedSettings() {
+      document.getElementById('host').value = DEFAULT_SETTINGS.host;
+      document.getElementById('port').value = DEFAULT_SETTINGS.port;
+      document.getElementById('username').value = DEFAULT_SETTINGS.username;
+      document.getElementById('privateKeyPath').value = DEFAULT_SETTINGS.privateKeyPath;
+      document.getElementById('remotePath').value = DEFAULT_SETTINGS.remotePath;
+
+      try {
+        const rawSettings = localStorage.getItem(STORAGE_KEY);
+        if (!rawSettings) return;
+
+        const settings = JSON.parse(rawSettings);
+        document.getElementById('host').value = settings.host || DEFAULT_SETTINGS.host;
+        document.getElementById('port').value = settings.port || DEFAULT_SETTINGS.port;
+        document.getElementById('username').value = settings.username || DEFAULT_SETTINGS.username;
+        document.getElementById('privateKeyPath').value = settings.privateKeyPath || DEFAULT_SETTINGS.privateKeyPath;
+        document.getElementById('remotePath').value = settings.remotePath || DEFAULT_SETTINGS.remotePath;
+      } catch (_error) {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+
+      document.getElementById('passphrase').value = '';
+    }
+
+    function updateConnectionSummary(config) {
+      connectionSummaryEl.textContent = `${config.username}@${config.host}:${config.port || '22'}  ${config.remotePath}`;
+    }
+
+    function sortFilesNewestFirst(files) {
+      return [...files].sort((a, b) => {
+        const left = Number(a.modifyTime || 0);
+        const right = Number(b.modifyTime || 0);
+        return right - left;
+      });
+    }
+
+    function renderFiles(files, remotePath) {
+      const searchTerm = searchInput.value.trim().toLowerCase();
+      const visibleFiles = files.filter((item) => item.name.toLowerCase().includes(searchTerm));
+
+      if (visibleFiles.length === 0) {
+        resultsBody.innerHTML = '';
+        resultsTable.style.display = 'none';
+        filesStatusEl.textContent = searchTerm
+          ? `No files match "${searchInput.value.trim()}".`
+          : 'Connected. Found 0 file(s).';
+        return;
+      }
+
+      resultsBody.innerHTML = visibleFiles.map(item => `
+        <tr>
+          <td>${escapeHtml(item.name)}</td>
+          <td>${escapeHtml(item.type)}</td>
+          <td>${escapeHtml(item.size)}</td>
+          <td>${escapeHtml(formatDate(item.modifyTime))}</td>
+          <td><button class="action-btn" data-file-name="${escapeHtml(item.name)}">Copy URL</button></td>
+        </tr>
+      `).join('');
+      resultsTable.style.display = '';
+
+      resultsBody.querySelectorAll('.action-btn').forEach(button => {
+        button.addEventListener('click', () => {
+          const fileName = button.getAttribute('data-file-name');
+          copyUrl(remotePath, fileName);
+        });
+      });
+    }
+
+    async function fetchFiles(config) {
+      resultsTable.style.display = 'none';
+      resultsBody.innerHTML = '';
+      urlPreviewEl.style.display = 'none';
+      urlPreviewEl.innerHTML = '';
+      searchInput.value = '';
+      filesStatusEl.textContent = 'Connecting...';
+
+      const result = await ipcRenderer.invoke('list-sftp-files', config);
+
+      if (!result.success) {
+        filesStatusEl.textContent = 'Error: ' + result.error;
+        return false;
+      }
+
+      const filesOnly = result.items.filter(item => item.type === 'file');
+      currentFiles = sortFilesNewestFirst(filesOnly);
+      filesStatusEl.textContent = 'Connected. Found ' + currentFiles.length + ' file(s).';
+      renderFiles(currentFiles, config.remotePath);
+      return true;
+    }
+
+    connectBtn.addEventListener('click', async () => {
+      connectBtn.disabled = true;
+      statusEl.textContent = 'Saving settings and connecting...';
+
+      const config = getConfigFromForm();
+      saveSettings(config);
+      currentConfig = config;
+
+      updateConnectionSummary(config);
+      setScreen('files');
+
+      const success = await fetchFiles(config);
+
+      if (!success) {
+        setScreen('connection');
+        statusEl.textContent = 'Error: ' + filesStatusEl.textContent.replace(/^Error:\s*/, '');
+      } else {
+        statusEl.textContent = 'Settings saved locally. Enter the passphrase again next time.';
+        document.getElementById('passphrase').value = '';
+      }
+
+      connectBtn.disabled = false;
+    });
+
+    refreshBtn.addEventListener('click', async () => {
+      if (!currentConfig) return;
+      refreshBtn.disabled = true;
+      await fetchFiles(currentConfig);
+      refreshBtn.disabled = false;
+    });
+
+    changeConnectionBtn.addEventListener('click', () => {
+      currentConfig = null;
+      currentFiles = [];
+      document.getElementById('passphrase').value = '';
+      statusEl.textContent = 'Saved settings loaded. Enter the passphrase and reconnect.';
+      setScreen('connection');
+    });
+
+    searchInput.addEventListener('input', () => {
+      if (!currentConfig) return;
+      renderFiles(currentFiles, currentConfig.remotePath);
+    });
+
+    loadSavedSettings();
+    setScreen('connection');
+  </script>
+</body>
+</html>

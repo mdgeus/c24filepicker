@@ -4,26 +4,47 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>C24 asset URL copy tool</title>
+  <link rel="icon" type="image/png" href="./favicon.png" />
   <style>
+    :root {
+      --bg: #f4efe7;
+      --panel: #fffdf9;
+      --panel-strong: #f7f1e8;
+      --text: #1f2823;
+      --muted: #5f6f66;
+      --line: #d7ddd6;
+      --primary: #2a2b61;
+      --primary-hover: #1f204b;
+      --primary-soft: #ececfa;
+      --secondary: #e9dfd2;
+      --secondary-hover: #ddd1c1;
+      --accent: #c8752a;
+      --shadow: rgba(43, 55, 48, 0.12);
+    }
+
     body {
       font-family: Arial, sans-serif;
       margin: 0;
-      background: #f5f7fb;
-      color: #1f2937;
+      background:
+        radial-gradient(circle at top left, rgba(42, 43, 97, 0.12), transparent 28%),
+        linear-gradient(180deg, #f8f5ef 0%, var(--bg) 100%);
+      color: var(--text);
     }
 
     .wrap {
       max-width: 960px;
       margin: 30px auto;
-      background: #fff;
+      background: var(--panel);
       padding: 24px;
       border-radius: 12px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      border: 1px solid rgba(95, 111, 102, 0.12);
+      box-shadow: 0 14px 40px var(--shadow);
     }
 
     h1 {
       margin-top: 0;
       font-size: 28px;
+      color: #16201b;
     }
 
     .screen[hidden] {
@@ -53,9 +74,17 @@
 
     input {
       padding: 10px 12px;
-      border: 1px solid #d1d5db;
+      border: 1px solid var(--line);
       border-radius: 8px;
       font-size: 14px;
+      background: #fffdfa;
+      color: var(--text);
+    }
+
+    input:focus {
+      outline: 2px solid rgba(42, 43, 97, 0.18);
+      outline-offset: 1px;
+      border-color: var(--primary);
     }
 
     button {
@@ -64,15 +93,25 @@
       border: 0;
       border-radius: 8px;
       cursor: pointer;
-      background: #2563eb;
+      background: var(--primary);
       color: white;
       font-size: 15px;
       font-weight: 600;
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    button:hover:not(:disabled) {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
     }
 
     .secondary-btn {
-      background: #e5e7eb;
-      color: #111827;
+      background: var(--secondary);
+      color: var(--text);
+    }
+
+    .secondary-btn:hover:not(:disabled) {
+      background: var(--secondary-hover);
     }
 
     button:disabled {
@@ -84,7 +123,8 @@
       margin-top: 18px;
       padding: 12px;
       border-radius: 8px;
-      background: #eef2ff;
+      background: var(--primary-soft);
+      border: 1px solid rgba(42, 43, 97, 0.14);
       white-space: pre-wrap;
     }
 
@@ -92,23 +132,26 @@
       width: 100%;
       border-collapse: collapse;
       margin-top: 20px;
-      background: white;
+      background: #fff;
+      border: 1px solid rgba(95, 111, 102, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
     }
 
     th, td {
       padding: 12px;
-      border-bottom: 1px solid #e5e7eb;
+      border-bottom: 1px solid rgba(95, 111, 102, 0.12);
       text-align: left;
       font-size: 14px;
       vertical-align: middle;
     }
 
     th {
-      background: #f9fafb;
+      background: var(--panel-strong);
     }
 
     .muted {
-      color: #6b7280;
+      color: var(--muted);
       font-size: 13px;
       margin-top: 8px;
     }
@@ -117,15 +160,19 @@
       margin-top: 0;
       padding: 8px 12px;
       font-size: 13px;
-      background: #111827;
+      background: #20332a;
+    }
+
+    .action-btn:hover:not(:disabled) {
+      background: #16241d;
     }
 
     .url-preview {
       margin-top: 16px;
       padding: 12px;
-      border: 1px solid #dbe3f0;
+      border: 1px solid rgba(200, 117, 42, 0.2);
       border-radius: 8px;
-      background: #f9fbff;
+      background: #fff6ec;
       word-break: break-all;
       font-size: 14px;
     }
@@ -147,6 +194,54 @@
 
     .search-row {
       margin-top: 16px;
+    }
+
+    .drop-zone {
+      margin-top: 20px;
+      padding: 28px;
+      border: 2px dashed rgba(42, 43, 97, 0.35);
+      border-radius: 12px;
+      background: linear-gradient(180deg, #f7f7fd 0%, #f0f1fb 100%);
+      text-align: center;
+      transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+    }
+
+    .drop-zone.drag-over {
+      border-color: var(--primary);
+      background: #e4e5f8;
+      transform: translateY(-1px);
+    }
+
+    .drop-zone-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .selected-file {
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 8px;
+      background: #fcfaf6;
+      border: 1px solid rgba(95, 111, 102, 0.14);
+      word-break: break-word;
+    }
+
+    .hidden-input {
+      display: none;
+    }
+
+    .file-name {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .file-name img {
+      width: 18px;
+      height: 18px;
+      object-fit: contain;
+      flex: 0 0 auto;
     }
   </style>
 </head>
@@ -199,6 +294,7 @@
           <p id="connectionSummary" class="muted"></p>
         </div>
         <div class="toolbar-actions">
+          <button id="openUploadScreenBtn" class="secondary-btn">Upload File</button>
           <button id="changeConnectionBtn" class="secondary-btn">Change Connection</button>
           <button id="refreshBtn">Refresh Files</button>
         </div>
@@ -224,10 +320,34 @@
         <tbody id="resultsBody"></tbody>
       </table>
     </div>
+
+    <div id="uploadScreen" class="screen" hidden>
+      <div class="toolbar">
+        <div>
+          <h1>Upload File</h1>
+          <p id="uploadConnectionSummary" class="muted"></p>
+        </div>
+        <div class="toolbar-actions">
+          <button id="backToFilesBtn" class="secondary-btn">Back to Files</button>
+          <button id="changeConnectionFromUploadBtn" class="secondary-btn">Change Connection</button>
+        </div>
+      </div>
+
+      <div id="uploadStatus" class="status">Choose a file to upload.</div>
+      <div id="dropZone" class="drop-zone">
+        <div class="drop-zone-title">Drop a file here</div>
+        <div class="muted">or choose a file from this device</div>
+        <button id="chooseFileBtn" type="button">Choose File</button>
+        <input id="fileInput" class="hidden-input" type="file" />
+      </div>
+      <div id="selectedFileInfo" class="selected-file" style="display:none;"></div>
+      <button id="uploadBtn" disabled>Upload Selected File</button>
+    </div>
   </div>
 
   <script>
-    const { ipcRenderer, clipboard } = require('electron');
+    const { ipcRenderer, clipboard, webUtils } = require('electron');
+    const path = require('path');
     const STORAGE_KEY = 'sftp-file-browser-settings';
     const DEFAULT_SETTINGS = {
       host: 'assets.conversation24.com',
@@ -246,12 +366,24 @@
     const resultsTable = document.getElementById('resultsTable');
     const resultsBody = document.getElementById('resultsBody');
     const refreshBtn = document.getElementById('refreshBtn');
+    const openUploadScreenBtn = document.getElementById('openUploadScreenBtn');
     const changeConnectionBtn = document.getElementById('changeConnectionBtn');
+    const uploadScreen = document.getElementById('uploadScreen');
+    const backToFilesBtn = document.getElementById('backToFilesBtn');
+    const changeConnectionFromUploadBtn = document.getElementById('changeConnectionFromUploadBtn');
+    const uploadConnectionSummaryEl = document.getElementById('uploadConnectionSummary');
+    const uploadStatusEl = document.getElementById('uploadStatus');
+    const dropZone = document.getElementById('dropZone');
+    const chooseFileBtn = document.getElementById('chooseFileBtn');
+    const fileInput = document.getElementById('fileInput');
+    const selectedFileInfoEl = document.getElementById('selectedFileInfo');
+    const uploadBtn = document.getElementById('uploadBtn');
     const connectionSummaryEl = document.getElementById('connectionSummary');
     const searchInput = document.getElementById('searchInput');
 
     let currentConfig = null;
     let currentFiles = [];
+    let selectedUploadPath = '';
 
     function formatDate(value) {
       if (!value) return '';
@@ -302,9 +434,9 @@
     }
 
     function setScreen(screenName) {
-      const showConnection = screenName === 'connection';
-      connectionScreen.hidden = !showConnection;
-      filesScreen.hidden = showConnection;
+      connectionScreen.hidden = screenName !== 'connection';
+      filesScreen.hidden = screenName !== 'files';
+      uploadScreen.hidden = screenName !== 'upload';
     }
 
     function getConfigFromForm() {
@@ -355,6 +487,43 @@
 
     function updateConnectionSummary(config) {
       connectionSummaryEl.textContent = `${config.username}@${config.host}:${config.port || '22'}  ${config.remotePath}`;
+      uploadConnectionSummaryEl.textContent = connectionSummaryEl.textContent;
+    }
+
+    function clearSelectedUpload() {
+      selectedUploadPath = '';
+      fileInput.value = '';
+      selectedFileInfoEl.style.display = 'none';
+      selectedFileInfoEl.textContent = '';
+      uploadBtn.disabled = true;
+    }
+
+    function setSelectedUpload(filePath) {
+      selectedUploadPath = filePath || '';
+
+      if (!selectedUploadPath) {
+        clearSelectedUpload();
+        return;
+      }
+
+      selectedFileInfoEl.style.display = '';
+      selectedFileInfoEl.innerHTML = `<strong>Selected file:</strong><br>${escapeHtml(selectedUploadPath)}`;
+      uploadStatusEl.textContent = `Ready to upload ${path.basename(selectedUploadPath)}.`;
+      uploadBtn.disabled = false;
+    }
+
+    function getLocalPathFromFile(file) {
+      if (!file) return '';
+
+      if (typeof file.path === 'string' && file.path) {
+        return file.path;
+      }
+
+      if (webUtils && typeof webUtils.getPathForFile === 'function') {
+        return webUtils.getPathForFile(file) || '';
+      }
+
+      return '';
     }
 
     function sortFilesNewestFirst(files) {
@@ -380,7 +549,12 @@
 
       resultsBody.innerHTML = visibleFiles.map(item => `
         <tr>
-          <td>${escapeHtml(item.name)}</td>
+          <td>
+            <span class="file-name">
+              <img src="./favicon.png" alt="" aria-hidden="true" />
+              <span>${escapeHtml(item.name)}</span>
+            </span>
+          </td>
           <td>${escapeHtml(item.type)}</td>
           <td>${escapeHtml(item.size)}</td>
           <td>${escapeHtml(formatDate(item.modifyTime))}</td>
@@ -419,6 +593,40 @@
       return true;
     }
 
+    async function uploadSelectedFile() {
+      if (!currentConfig || !selectedUploadPath) return false;
+
+      uploadBtn.disabled = true;
+      chooseFileBtn.disabled = true;
+      uploadStatusEl.textContent = `Uploading ${path.basename(selectedUploadPath)}...`;
+
+      const result = await ipcRenderer.invoke('upload-sftp-file', {
+        config: currentConfig,
+        localFilePath: selectedUploadPath
+      });
+
+      chooseFileBtn.disabled = false;
+
+      if (!result.success) {
+        uploadStatusEl.textContent = 'Error: ' + result.error;
+        uploadBtn.disabled = false;
+        return false;
+      }
+
+      const assetUrl = createAssetUrl(currentConfig.remotePath, result.fileName);
+      clipboard.writeText(assetUrl);
+      uploadStatusEl.innerHTML = `<strong>Upload complete.</strong><br>${escapeHtml(result.fileName)} uploaded and URL copied to clipboard.<br>${escapeHtml(assetUrl)}`;
+      clearSelectedUpload();
+      const refreshed = await fetchFiles(currentConfig);
+      setScreen('files');
+      filesStatusEl.textContent = refreshed
+        ? `Uploaded ${result.fileName}. URL copied to clipboard.`
+        : `Uploaded ${result.fileName}, but reloading the file list failed. URL copied to clipboard.`;
+      urlPreviewEl.style.display = '';
+      urlPreviewEl.innerHTML = `<strong>Copied URL:</strong><br>${escapeHtml(assetUrl)}`;
+      return true;
+    }
+
     connectBtn.addEventListener('click', async () => {
       connectBtn.disabled = true;
       statusEl.textContent = 'Saving settings and connecting...';
@@ -450,17 +658,95 @@
       refreshBtn.disabled = false;
     });
 
-    changeConnectionBtn.addEventListener('click', () => {
+    function goToConnectionScreen() {
       currentConfig = null;
       currentFiles = [];
+      clearSelectedUpload();
       document.getElementById('passphrase').value = '';
       statusEl.textContent = 'Saved settings loaded. Enter the passphrase and reconnect.';
       setScreen('connection');
+    }
+
+    changeConnectionBtn.addEventListener('click', goToConnectionScreen);
+    changeConnectionFromUploadBtn.addEventListener('click', goToConnectionScreen);
+
+    openUploadScreenBtn.addEventListener('click', () => {
+      if (!currentConfig) return;
+      clearSelectedUpload();
+      uploadStatusEl.textContent = 'Choose a file to upload.';
+      setScreen('upload');
+    });
+
+    backToFilesBtn.addEventListener('click', () => {
+      setScreen('files');
     });
 
     searchInput.addEventListener('input', () => {
       if (!currentConfig) return;
       renderFiles(currentFiles, currentConfig.remotePath);
+    });
+
+    chooseFileBtn.addEventListener('click', () => {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', () => {
+      const [file] = fileInput.files || [];
+      if (!file) {
+        clearSelectedUpload();
+        uploadStatusEl.textContent = 'Choose a file to upload.';
+        return;
+      }
+
+      const localPath = getLocalPathFromFile(file);
+
+      if (!localPath) {
+        clearSelectedUpload();
+        uploadStatusEl.textContent = 'Could not access the selected file path.';
+        return;
+      }
+
+      setSelectedUpload(localPath);
+    });
+
+    ['dragenter', 'dragover'].forEach((eventName) => {
+      dropZone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        dropZone.classList.add('drag-over');
+      });
+    });
+
+    ['dragleave', 'dragend', 'drop'].forEach((eventName) => {
+      dropZone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        dropZone.classList.remove('drag-over');
+      });
+    });
+
+    dropZone.addEventListener('drop', (event) => {
+      const files = Array.from(event.dataTransfer?.files || []);
+      const [file] = files;
+
+      if (!file) {
+        uploadStatusEl.textContent = 'No file detected in the drop action.';
+        return;
+      }
+
+      const localPath = getLocalPathFromFile(file);
+
+      if (!localPath) {
+        clearSelectedUpload();
+        uploadStatusEl.textContent = 'Could not access the dropped file path.';
+        return;
+      }
+
+      setSelectedUpload(localPath);
+    });
+
+    uploadBtn.addEventListener('click', async () => {
+      await uploadSelectedFile();
     });
 
     loadSavedSettings();

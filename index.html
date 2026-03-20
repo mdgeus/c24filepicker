@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>C24 asset URL copy tool</title>
-  <link rel="icon" type="image/png" href="./favicon.png" />
+  <link rel="icon" type="image/png" href="./c24 blok logo.png" />
   <style>
     :root {
       --bg: #f4efe7;
@@ -238,10 +238,13 @@
     }
 
     .file-name img {
-      width: 18px;
-      height: 18px;
+      width: 28px;
+      height: 28px;
       object-fit: contain;
       flex: 0 0 auto;
+      border-radius: 6px;
+      background: #fff;
+      border: 1px solid rgba(95, 111, 102, 0.12);
     }
   </style>
 </head>
@@ -534,6 +537,24 @@
       });
     }
 
+    function isPreviewableFile(fileName) {
+      return /\.(avif|gif|jpe?g|png|svg|webp)$/i.test(String(fileName || ''));
+    }
+
+    function renderFileThumbnail(remotePath, item) {
+      const fallbackIcon = './c24 blok logo.png';
+
+      if (!isPreviewableFile(item.name)) {
+        return `<img src="${fallbackIcon}" alt="" aria-hidden="true" />`;
+      }
+
+      const assetUrl = escapeHtml(createAssetUrl(remotePath, item.name));
+      const escapedFallbackIcon = escapeHtml(fallbackIcon);
+      const escapedName = escapeHtml(item.name);
+
+      return `<img src="${assetUrl}" alt="${escapedName}" loading="lazy" onerror="this.onerror=null;this.src='${escapedFallbackIcon}'" />`;
+    }
+
     function renderFiles(files, remotePath) {
       const searchTerm = searchInput.value.trim().toLowerCase();
       const visibleFiles = files.filter((item) => item.name.toLowerCase().includes(searchTerm));
@@ -551,7 +572,7 @@
         <tr>
           <td>
             <span class="file-name">
-              <img src="./favicon.png" alt="" aria-hidden="true" />
+              ${renderFileThumbnail(remotePath, item)}
               <span>${escapeHtml(item.name)}</span>
             </span>
           </td>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Conversation24 File Picker Help</title>
+  <link rel="icon" type="image/png" href="./c24 blok logo.png" />
+  <style>
+    :root {
+      --bg: #f4efe7;
+      --panel: #fffdf9;
+      --panel-strong: #f7f1e8;
+      --text: #1f2823;
+      --muted: #5f6f66;
+      --line: #d7ddd6;
+      --primary: #2a2b61;
+      --accent: #c8752a;
+      --shadow: rgba(43, 55, 48, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(42, 43, 97, 0.12), transparent 28%),
+        linear-gradient(180deg, #f8f5ef 0%, var(--bg) 100%);
+    }
+
+    .wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 32px 24px 40px;
+    }
+
+    .hero {
+      background: var(--panel);
+      border: 1px solid rgba(95, 111, 102, 0.12);
+      border-radius: 16px;
+      box-shadow: 0 14px 40px var(--shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    h1, h2 {
+      margin: 0 0 12px;
+    }
+
+    p {
+      line-height: 1.5;
+      margin: 0 0 12px;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid rgba(95, 111, 102, 0.12);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 10px 28px rgba(43, 55, 48, 0.08);
+    }
+
+    ol, ul {
+      margin: 0;
+      padding-left: 20px;
+      line-height: 1.6;
+    }
+
+    code {
+      background: var(--panel-strong);
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.95em;
+    }
+
+    .callout {
+      border-left: 4px solid var(--accent);
+      padding-left: 14px;
+      margin-top: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>Conversation24 File Picker Help</h1>
+      <p class="muted">Use this app to connect to the SFTP server, browse files, upload new files, and copy public asset URLs.</p>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <h2>Connect</h2>
+        <ol>
+          <li>Enter the SFTP host, port, username, private key path, and remote folder.</li>
+          <li>Enter the key passphrase for the current session.</li>
+          <li>Click <strong>Connect and Open File List</strong>.</li>
+        </ol>
+      </article>
+
+      <article class="card">
+        <h2>Browse And Copy URLs</h2>
+        <ol>
+          <li>Use the search field to filter the file list.</li>
+          <li>Image files can show thumbnails directly in the file list using their public asset URL.</li>
+          <li>Click <strong>Copy URL</strong> next to a file to copy its public asset URL.</li>
+          <li>The copied URL is shown inside the app after each action.</li>
+        </ol>
+      </article>
+
+      <article class="card">
+        <h2>Upload A File</h2>
+        <ol>
+          <li>Open the upload screen from the main file view.</li>
+          <li>Drag a file onto the drop zone or click <strong>Choose File</strong>.</li>
+          <li>Confirm the selected file appears in the upload area.</li>
+          <li>Click <strong>Upload Selected File</strong>.</li>
+        </ol>
+      </article>
+
+      <article class="card">
+        <h2>Troubleshooting</h2>
+        <ul>
+          <li>Check that the private key path points to a real file on disk.</li>
+          <li>Confirm the passphrase is correct for the current key.</li>
+          <li>Verify the remote folder exists and your account can write to it.</li>
+          <li>If upload fails, reconnect and try again with the same file.</li>
+        </ul>
+        <p class="callout"><strong>Note:</strong> Settings are saved locally, but the passphrase is intentionally entered each time.</p>
+      </article>
+
+      <article class="card">
+        <h2>Version</h2>
+        <p>This build includes the in-app help menu, file upload support, and file thumbnails for previewable image assets.</p>
+        <p><code>Version 2.0.0</code></p>
+      </article>
+    </section>
+  </div>
+</body>
+</html>

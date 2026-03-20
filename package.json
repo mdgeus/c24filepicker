@@ -1,6 +1,6 @@
 {
   "name": "C24-asset-url-cop",
-  "version": "2.0.2",
+  "version": "2.0.0",
   "productName": "Conversation24 File Picker",
   "description": "Get URL for file on FTP location",
   "author": "d.geus@Conversation24",
@@ -23,21 +23,23 @@
   "build": {
     "appId": "com.conversation24.filepicker",
     "productName": "Conversation24 File Picker",
-    "icon": "favicon.png",
+    "icon": "c24 blok logo.png",
     "asar": true,
     "compression": "maximum",
     "npmRebuild": false,
     "files": [
-      "favicon.png",
+      "c24 blok logo.png",
+      "help.html",
       "index.html",
       "main.js",
       "package.json"
     ],
     "directories": {
+      "buildResources": "build",
       "output": "dist"
     },
     "win": {
-      "icon": "favicon.png",
+      "icon": "build/icon.ico",
       "signAndEditExecutable": false,
       "artifactName": "${productName}-${version}.${ext}"
     },
@@ -48,7 +50,7 @@
       "artifactName": "${productName}-Setup-${version}.${ext}"
     },
     "mac": {
-      "icon": "favicon.png",
+      "icon": "c24 blok logo.png",
       "identity": null,
       "target": [
         "dmg",

@@ -1,23 +1,129 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, Menu, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const SftpClient = require('ssh2-sftp-client');
 
+let mainWindow = null;
+let helpWindow = null;
+
 function createWindow() {
-  const win = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1000,
     height: 700,
-    icon: path.join(__dirname, 'favicon.png'),
+    icon: path.join(__dirname, 'c24 blok logo.png'),
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
     }
   });
 
-  win.loadFile('index.html');
+  mainWindow.loadFile('index.html');
+  mainWindow.on('closed', () => {
+    mainWindow = null;
+  });
+}
+
+function openHelpWindow() {
+  if (helpWindow && !helpWindow.isDestroyed()) {
+    helpWindow.focus();
+    return;
+  }
+
+  helpWindow = new BrowserWindow({
+    width: 760,
+    height: 620,
+    title: 'Help',
+    icon: path.join(__dirname, 'c24 blok logo.png'),
+    resizable: true,
+    minimizable: true,
+    maximizable: false,
+    parent: mainWindow || undefined,
+    modal: false,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true
+    }
+  });
+
+  helpWindow.loadFile('help.html');
+  helpWindow.on('closed', () => {
+    helpWindow = null;
+  });
+}
+
+function buildAppMenu() {
+  const isMac = process.platform === 'darwin';
+  const template = [
+    ...(isMac ? [{
+      label: app.name,
+      submenu: [
+        { role: 'about' },
+        { type: 'separator' },
+        { role: 'services' },
+        { type: 'separator' },
+        { role: 'hide' },
+        { role: 'hideOthers' },
+        { role: 'unhide' },
+        { type: 'separator' },
+        { role: 'quit' }
+      ]
+    }] : []),
+    {
+      label: 'File',
+      submenu: [
+        isMac ? { role: 'close' } : { role: 'quit' }
+      ]
+    },
+    {
+      label: 'View',
+      submenu: [
+        { role: 'reload' },
+        { role: 'forceReload' },
+        { role: 'toggleDevTools' },
+        { type: 'separator' },
+        { role: 'resetZoom' },
+        { role: 'zoomIn' },
+        { role: 'zoomOut' },
+        { type: 'separator' },
+        { role: 'togglefullscreen' }
+      ]
+    },
+    {
+      label: 'Window',
+      submenu: [
+        { role: 'minimize' },
+        { role: 'zoom' },
+        ...(isMac ? [
+          { type: 'separator' },
+          { role: 'front' }
+        ] : [
+          { role: 'close' }
+        ])
+      ]
+    },
+    ...(isMac ? [{
+      label: 'Help',
+      submenu: [
+        {
+          label: 'View Help',
+          click: () => openHelpWindow()
+        },
+        {
+          label: 'About Conversation24 File Picker',
+          click: () => openHelpWindow()
+        }
+      ]
+    }] : [{
+      label: 'Help',
+      click: () => openHelpWindow()
+    }])
+  ];
+
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
 app.whenReady().then(() => {
+  buildAppMenu();
   createWindow();
 
   app.on('activate', () => {
